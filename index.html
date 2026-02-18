@@ -1,0 +1,647 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>PDF Word Counter Online | Free PDF Word & Character Count Tool</title>
+  <meta name="description" content="Free online PDF word counter – count words, characters (with/without spaces), and pages in PDF. Client‑side, no upload, secure. Perfect for students, writers.">
+  <meta name="keywords" content="pdf word counter, count words in pdf, pdf character counter, free pdf word count tool, online pdf word counter">
+  <!-- Open Graph / social -->
+  <meta property="og:title" content="PDF Word Counter – Count Words & Characters in PDF">
+  <meta property="og:description" content="Free, private, client‑side PDF word count tool. No upload – secure and fast.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://as9329387575.github.io/pdf-word-counter">
+  <meta property="og:image" content="https://via.placeholder.com/1200x630?text=PDF+Word+Counter">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://as9329387575.github.io/pdf-word-counter">
+
+  <!-- PDF.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <style>
+    /* ----- RESET & BASE ----- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: #f8faff;
+      color: #1e293b;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ----- LAYOUT ----- */
+    .container {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .main-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+
+    .content {
+      flex: 1 1 65%;
+      min-width: 300px;
+    }
+
+    .sidebar-desktop {
+      flex: 0 0 300px;
+      display: none; /* hidden on mobile */
+    }
+
+    @media (min-width: 992px) {
+      .sidebar-desktop {
+        display: block;
+      }
+    }
+
+    /* ----- AD PLACEHOLDERS (clean & labeled) ----- */
+    .ad-space {
+      background: #eef2f6;
+      border: 1px dashed #94a3b8;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #334155;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 1.5rem 0;
+      text-align: center;
+    }
+
+    .ad-banner {
+      width: 100%;
+      min-height: 90px;
+      background: #e2e8f0;
+    }
+
+    .ad-rectangle {
+      width: 100%;
+      max-width: 300px;
+      height: 250px;
+      margin: 1rem auto;
+      background: #e2e8f0;
+    }
+
+    .ad-footer {
+      width: 100%;
+      min-height: 90px;
+      background: #e2e8f0;
+    }
+
+    /* ----- HEADINGS & TEXT ----- */
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #0f172a;
+      margin: 1rem 0 0.5rem;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 2rem 0 1rem;
+      border-bottom: 2px solid #b1c5e0;
+      padding-bottom: 0.5rem;
+    }
+
+    h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin: 1.5rem 0 0.75rem;
+      color: #1e293b;
+    }
+
+    /* ----- UPLOAD CARD (drag & drop) ----- */
+    .upload-card {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 53, 102, 0.1), 0 8px 10px -6px rgba(0,0,0,0.02);
+      padding: 2rem 1.5rem;
+      margin: 1.5rem 0;
+      transition: box-shadow 0.2s;
+    }
+
+    .drop-area {
+      border: 2px dashed #94a3b8;
+      border-radius: 20px;
+      padding: 2.5rem 1rem;
+      text-align: center;
+      background: #fafcff;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .drop-area.dragover {
+      border-color: #2563eb;
+      background: #eef2ff;
+    }
+
+    .drop-area p {
+      font-size: 1.2rem;
+      color: #475569;
+      margin-bottom: 1rem;
+    }
+
+    .file-input-label {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.8rem 2rem;
+      border-radius: 40px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-block;
+      box-shadow: 0 4px 6px -2px rgba(37, 99, 235, 0.3);
+      transition: background 0.2s;
+    }
+
+    .file-input-label:hover {
+      background: #1d4ed8;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .file-name {
+      margin-top: 1.2rem;
+      font-weight: 500;
+      background: #e6f0ff;
+      padding: 0.6rem 1.2rem;
+      border-radius: 40px;
+      display: inline-block;
+      color: #0f3b7a;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 1.8rem 0 0.5rem;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.7rem 2rem;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 6px -2px rgba(37,99,235,0.2);
+      transition: 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #1e293b;
+      border: 1px solid #cbd5e1;
+      padding: 0.7rem 2rem;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: #f1f5f9;
+    }
+
+    /* ----- LOADING SPINNER ----- */
+    .spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid #cbd5e1;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 1rem auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-area {
+      text-align: center;
+      padding: 1rem;
+    }
+
+    /* ----- RESULT CARDS ----- */
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1.2rem;
+      margin: 2rem 0 1rem;
+    }
+
+    .result-card {
+      background: white;
+      border-radius: 20px;
+      padding: 1.5rem 1rem;
+      box-shadow: 0 4px 12px rgba(0, 34, 68, 0.05);
+      text-align: center;
+      border: 1px solid #e9eef3;
+    }
+
+    .result-card .value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .result-card .label {
+      font-size: 0.95rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ----- ERROR MESSAGE ----- */
+    .error-message {
+      background: #fee2e2;
+      border-left: 6px solid #b91c1c;
+      color: #7f1d1d;
+      padding: 1rem 1.5rem;
+      border-radius: 16px;
+      font-weight: 500;
+      margin: 1.5rem 0;
+    }
+
+    /* ----- CONTACT FORM ----- */
+    .contact-form {
+      background: white;
+      border-radius: 24px;
+      padding: 2rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.9rem 1.2rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 16px;
+      font-size: 1rem;
+      transition: 0.2s;
+    }
+    input:focus, textarea:focus {
+      border-color: #2563eb;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .submit-btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.9rem 2rem;
+      border-radius: 40px;
+      font-weight: 600;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    /* ----- FOOTER LINKS ----- */
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+      margin: 2rem 0 1rem;
+    }
+    .footer-links a {
+      color: #1e293b;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+    .copyright {
+      text-align: center;
+      color: #64748b;
+      font-size: 0.9rem;
+      margin: 2rem 0 1rem;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #d4deec;
+      margin: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- H1 -->
+    <h1>PDF Word Counter – Count Words, Characters & Pages in PDF Online Free</h1>
+
+    <!-- TOP BANNER AD -->
+    <div class="ad-space ad-banner">Ad Space – 728x90</div>
+
+    <div class="main-grid">
+      <!-- MAIN CONTENT COLUMN -->
+      <div class="content">
+        <!-- TOOL SECTION -->
+        <div class="upload-card">
+          <div class="drop-area" id="dropArea">
+            <p>📄 Drag & drop your PDF here</p>
+            <label for="fileInput" class="file-input-label">Choose PDF</label>
+            <input type="file" id="fileInput" accept=".pdf,application/pdf">
+            <div id="fileNameDisplay" class="file-name" style="display: none;"></div>
+          </div>
+
+          <div class="btn-group">
+            <button class="btn-primary" id="countBtn">Count words</button>
+            <button class="btn-secondary" id="clearBtn">Clear</button>
+          </div>
+
+          <!-- loading animation (hidden by default) -->
+          <div id="loading" class="loading-area" style="display: none;"><div class="spinner"></div><p>Extracting text...</p></div>
+
+          <!-- error box -->
+          <div id="errorBox" class="error-message" style="display: none;"></div>
+
+          <!-- result cards -->
+          <div id="resultsArea" style="display: none;">
+            <div class="result-grid">
+              <div class="result-card"><span class="value" id="totalWords">0</span><span class="label">Words</span></div>
+              <div class="result-card"><span class="value" id="charWithSpaces">0</span><span class="label">Chars (with spaces)</span></div>
+              <div class="result-card"><span class="value" id="charWithoutSpaces">0</span><span class="label">Chars (no spaces)</span></div>
+              <div class="result-card"><span class="value" id="totalPages">0</span><span class="label">Pages</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MIDDLE AD (after results) -->
+        <div class="ad-space ad-banner">Ad Space – 728x90</div>
+
+        <!-- LONG SEO CONTENT (1000+ words) -->
+        <section>
+          <h2>Free PDF Word Counter – Accurate, Private & Fast</h2>
+          <p>Counting words in a PDF shouldn’t require uploading sensitive documents to a server. Our PDF Word Counter works 100% in your browser – the file never leaves your device. Whether you’re a student checking an essay, a writer tracking a manuscript, or a researcher analysing a paper, this tool gives you instant counts for words, characters (with and without spaces), and total pages.</p>
+          
+          <h3>Why word count matters</h3>
+          <p>Academic institutions often require essays to meet strict word limits. Publishers request manuscripts with specific lengths. Translators charge by the word. Even social media posts sometimes need to stay within character limits. With this tool, you can quickly ensure your PDF meets requirements without installing software.</p>
+          
+          <h3>How the PDF word counter works (client‑side magic)</h3>
+          <p>Built on Mozilla’s PDF.js library, the tool opens your PDF and extracts text from every page directly in your browser. All processing happens locally – no upload, no server, no file storage. After extraction, we split the text by whitespace to count words, count all characters (with spaces), and remove spaces for the “without spaces” count. The page count comes straight from the PDF metadata. Because everything stays on your machine, your data remains private and secure.</p>
+          
+          <h3>Who should use this tool</h3>
+          <p><strong>Students:</strong> Check term papers, theses, or assignments against word limits. <strong>Writers & authors:</strong> Verify manuscript length before submitting to agents or publishers. <strong>Editors:</strong> Quickly evaluate document length. <strong>SEO & content specialists:</strong> Analyse PDF content for article length. <strong>Lawyers & translators:</strong> Estimate work volume. No matter your field, this tool gives you reliable counts in seconds.</p>
+          
+          <h3>Step‑by‑step guide</h3>
+          <p>1. Drag a PDF onto the dashed area or click “Choose PDF”.<br>2. The file name appears below the button – always check you’ve selected the right file.<br>3. Click “Count words”. A loading animation appears while text is extracted (larger PDFs may take a moment).<br>4. View your results: words, characters (with spaces), characters (no spaces), and total pages.<br>5. Use “Clear” to reset everything and upload another file.</p>
+          
+          <p><strong>Is there a file size limit?</strong> PDF.js can handle large files, but browser memory may limit extreme sizes. For typical documents (under 50 MB) it works perfectly. Scanned PDFs contain images, not text – this tool counts words only from text‑based PDFs. If you need OCR, consider converting to text first.</p>
+          
+          <p>We’ve designed the interface to be clean, modern, and accessible. The blue & white theme reduces eye strain, and the responsive layout adapts to phone, tablet, or desktop. The drag‑and‑drop area highlights when you drag a file, giving you clear feedback. All buttons have rounded corners and subtle shadows for a friendly look.</p>
+        </section>
+
+        <!-- FAQ SECTION -->
+        <section>
+          <h2>Frequently Asked Questions</h2>
+          <div itemscope itemtype="https://schema.org/FAQPage">
+            <h3 itemprop="name">1. Is this PDF word counter free?</h3>
+            <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer"><div itemprop="text">Yes, completely free. No registration, no hidden fees. You can count words in unlimited PDFs.</div></div>
+            <h3 itemprop="name">2. Is my PDF secure?</h3>
+            <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer"><div itemprop="text">Absolutely. All processing happens in your browser. Your file is never uploaded to any server.</div></div>
+            <h3 itemprop="name">3. Does this tool store files?</h3>
+            <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer"><div itemprop="text">No files are stored. Once you close the page, everything is erased from memory.</div></div>
+            <h3 itemprop="name">4. Can I count words in scanned PDFs?</h3>
+            <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer"><div itemprop="text">Only if the scanned PDF has text layer (OCR already applied). Image‑only PDFs won’t yield text – consider OCR software first.</div></div>
+            <h3 itemprop="name">5. What is the maximum file size?</h3>
+            <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer"><div itemprop="text">Limited only by your device memory. For very large files (500+ pages) it may take a few seconds.</div></div>
+            <h3 itemprop="name">6. Is character count accurate?</h3>
+            <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer"><div itemprop="text">Yes, we count every character, including spaces and punctuation, exactly as extracted from the PDF.</div></div>
+          </div>
+        </section>
+
+        <!-- CONTACT SECTION (FormSubmit) -->
+        <section>
+          <h2>Contact us</h2>
+          <div class="contact-form">
+            <form action="https://formsubmit.co/as9329387575@gmail.com" method="POST">
+              <input type="hidden" name="_captcha" value="false">
+              <div class="form-group"><input type="text" name="name" placeholder="Your name" required></div>
+              <div class="form-group"><input type="email" name="email" placeholder="Email address" required></div>
+              <div class="form-group"><textarea name="message" rows="4" placeholder="Your message" required></textarea></div>
+              <button type="submit" class="submit-btn">Send message</button>
+            </form>
+          </div>
+        </section>
+      </div> <!-- end content -->
+
+      <!-- SIDEBAR DESKTOP (300x250 ad) -->
+      <aside class="sidebar-desktop">
+        <div class="ad-space ad-rectangle">Ad Space – 300x250</div>
+        <div style="margin-top: 2rem; font-size: 0.9rem; background: #fff; border-radius: 16px; padding: 1.5rem;">
+          <h3 style="margin-top:0;">Why choose us?</h3>
+          <ul style="list-style: none; padding-left:0;">
+            <li>🔒 100% client‑side</li>
+            <li>⚡ Instant counts</li>
+            <li>📱 Mobile friendly</li>
+          </ul>
+        </div>
+      </aside>
+    </div> <!-- end main-grid -->
+
+    <!-- PRIVACY POLICY & TERMS -->
+    <hr>
+    <section>
+      <h2>Privacy Policy</h2>
+      <p><strong>No file storage:</strong> Your PDF is processed entirely in your browser. We never store, transmit, or view your document. <strong>Client‑side processing:</strong> All calculations happen on your device. <strong>Cookies & ads:</strong> This site may use cookies for AdSense/analytics. Google, as a third‑party vendor, uses cookies to serve ads based on prior visits. We do not sell your personal data. For any concerns, contact as9329387575@gmail.com.</p>
+      
+      <h2>Terms & Conditions</h2>
+      <p><strong>Usage rules:</strong> This tool is for lawful purposes only. <strong>No liability:</strong> We provide the word counter “as is”. While we strive for accuracy, we are not liable for any inaccuracies. <strong>File processing disclaimer:</strong> Always keep backups. <strong>Intellectual property:</strong> All code is proprietary. <strong>Governing law:</strong> Placeholder – use of this tool constitutes acceptance of these terms.</p>
+    </section>
+
+    <!-- FOOTER AD -->
+    <div class="ad-space ad-footer">Ad Space – Footer 728x90</div>
+
+    <!-- FOOTER LINKS & COPYRIGHT -->
+    <footer>
+      <div class="footer-links">
+        <a href="#">Home</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#terms">Terms</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="copyright">
+        © 2025 PDF Word Counter – Secure Client-Side PDF Processing
+      </div>
+    </footer>
+  </div>
+
+  <!-- JAVASCRIPT (Vanilla, PDF.js) -->
+  <script>
+    (function() {
+      // DOM elements
+      const dropArea = document.getElementById('dropArea');
+      const fileInput = document.getElementById('fileInput');
+      const fileNameDisplay = document.getElementById('fileNameDisplay');
+      const countBtn = document.getElementById('countBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const loading = document.getElementById('loading');
+      const errorBox = document.getElementById('errorBox');
+      const resultsArea = document.getElementById('resultsArea');
+
+      // result spans
+      const totalWordsSpan = document.getElementById('totalWords');
+      const charWithSpacesSpan = document.getElementById('charWithSpaces');
+      const charWithoutSpacesSpan = document.getElementById('charWithoutSpaces');
+      const totalPagesSpan = document.getElementById('totalPages');
+
+      let selectedFile = null;
+
+      // Helper to hide errors/reset display
+      function hideError() { errorBox.style.display = 'none'; errorBox.innerText = ''; }
+      function showError(msg) { errorBox.innerText = msg; errorBox.style.display = 'block'; resultsArea.style.display = 'none'; loading.style.display = 'none'; }
+
+      // Update file name
+      function updateFileName(file) {
+        if (file) {
+          fileNameDisplay.textContent = `📁 ${file.name}`;
+          fileNameDisplay.style.display = 'inline-block';
+        } else {
+          fileNameDisplay.style.display = 'none';
+        }
+      }
+
+      // Drag & drop events
+      dropArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropArea.classList.add('dragover');
+      });
+      dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
+      dropArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropArea.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type === 'application/pdf') {
+          selectedFile = file;
+          fileInput.files = e.dataTransfer.files; // sync input
+          updateFileName(file);
+          hideError();
+        } else {
+          showError('❌ Only PDF files are allowed.');
+        }
+      });
+
+      // File input change
+      fileInput.addEventListener('change', (e) => {
+        const file = fileInput.files[0];
+        if (file) {
+          if (file.type === 'application/pdf') {
+            selectedFile = file;
+            updateFileName(file);
+            hideError();
+          } else {
+            showError('❌ Please select a valid PDF file.');
+            fileInput.value = '';
+            selectedFile = null;
+            updateFileName(null);
+          }
+        } else {
+          selectedFile = null;
+          updateFileName(null);
+        }
+      });
+
+      // Clear button
+      clearBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        selectedFile = null;
+        updateFileName(null);
+        resultsArea.style.display = 'none';
+        hideError();
+        loading.style.display = 'none';
+      });
+
+      // Count button logic
+      countBtn.addEventListener('click', async () => {
+        if (!selectedFile) {
+          showError('⚠️ Please select a PDF file first.');
+          return;
+        }
+        hideError();
+        resultsArea.style.display = 'none';
+        loading.style.display = 'block';
+
+        try {
+          const arrayBuffer = await selectedFile.arrayBuffer();
+          const pdfData = new Uint8Array(arrayBuffer);
+          
+          // Load PDF via PDF.js
+          const pdfDocument = await pdfjsLib.getDocument({ data: pdfData }).promise;
+          const numPages = pdfDocument.numPages;
+          let fullText = '';
+
+          for (let i = 1; i <= numPages; i++) {
+            const page = await pdfDocument.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            fullText += pageText + ' ';
+          }
+
+          // Count words (split by whitespace, filter empty)
+          const words = fullText.split(/\s+/).filter(w => w.length > 0);
+          const wordCount = words.length;
+
+          // Characters with spaces
+          const charWith = fullText.length;
+
+          // Characters without spaces
+          const charWithout = fullText.replace(/\s+/g, '').length;
+
+          // Update UI
+          totalWordsSpan.innerText = wordCount.toLocaleString();
+          charWithSpacesSpan.innerText = charWith.toLocaleString();
+          charWithoutSpacesSpan.innerText = charWithout.toLocaleString();
+          totalPagesSpan.innerText = numPages;
+
+          resultsArea.style.display = 'block';
+        } catch (err) {
+          console.error(err);
+          showError('❌ Could not read PDF. It may be corrupted, password-protected, or image-only.');
+        } finally {
+          loading.style.display = 'none';
+        }
+      });
+
+      // Click on drop area triggers file input
+      dropArea.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') {
+          fileInput.click();
+        }
+      });
+
+      // initial clean state
+    })();
+  </script>
+</body>
+</html>
+```
